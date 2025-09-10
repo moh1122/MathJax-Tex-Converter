@@ -17,8 +17,6 @@
 <script>
 (function () {
   function decodeBackslashes(s) {
-    // Accept any of these author-safe encodings and turn them into '\'
-    // 1) doubled slashes  \\   2) HTML entities  &bsol; or &#92;
     return s
       .replace(/&bsol;|&#92;/gi, '\\')
       .replace(/\\\\/g, '\\');
@@ -31,14 +29,14 @@
     if (inline != null) {
       const tex = decodeBackslashes(inline.trim());
       node.removeAttribute('data-tex-inline');
-      node.innerHTML = '\\(' + tex + '\\)';   // inline wrapper
+      node.innerHTML = '\\(' + tex + '\\)';  
       return true;
     }
 
     if (block != null) {
       const tex = decodeBackslashes(block.trim());
       node.removeAttribute('data-tex-display');
-      node.innerHTML = '\\[' + tex + '\\]';   // display wrapper
+      node.innerHTML = '\\[' + tex + '\\]';  
       return true;
     }
     return false;
