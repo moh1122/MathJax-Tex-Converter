@@ -1,0 +1,69 @@
+<script>
+  window.MathJax = {
+    options: {
+      skipHtmlTags: ['script','noscript','style','textarea','pre','code']
+    },
+    tex: {
+      packages: {'[+]': ['ams']},           
+      inlineMath: [['\\(', '\\)']],        
+      displayMath: [['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
+<script>
+(function () {
+  function decodeBackslashes(s) {
+    // Accept any of these author-safe encodings and turn them into '\'
+    // 1) doubled slashes  \\   2) HTML entities  &bsol; or &#92;
+    return s
+      .replace(/&bsol;|&#92;/gi, '\\')
+      .replace(/\\\\/g, '\\');
+  }
+
+  function materialize(node) {
+    const inline = node.getAttribute('data-tex-inline');
+    const block  = node.getAttribute('data-tex-display');
+
+    if (inline != null) {
+      const tex = decodeBackslashes(inline.trim());
+      node.removeAttribute('data-tex-inline');
+      node.innerHTML = '\\(' + tex + '\\)';   // inline wrapper
+      return true;
+    }
+
+    if (block != null) {
+      const tex = decodeBackslashes(block.trim());
+      node.removeAttribute('data-tex-display');
+      node.innerHTML = '\\[' + tex + '\\]';   // display wrapper
+      return true;
+    }
+    return false;
+  }
+
+  async function typeset(root) {
+    if (window.MathJax && MathJax.typesetPromise) {
+      try { await MathJax.typesetPromise(root ? [root] : undefined); } catch (e) { console.error(e); }
+    }
+  }
+
+  async function convertAndTypeset(scope) {
+    const nodes = (scope || document).querySelectorAll('[data-tex-inline],[data-tex-display]');
+    let changed = false;
+    nodes.forEach(n => { changed = materialize(n) || changed; });
+    if (changed) await typeset(scope || document.body);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => convertAndTypeset());
+  } else {
+    convertAndTypeset();
+  }
+
+  const mo = new MutationObserver(() => convertAndTypeset());
+  mo.observe(document.body, {subtree: true, childList: true});
+})();
+</script>
